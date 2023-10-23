@@ -1,0 +1,76 @@
+﻿@page "/weather"
+@using System.Globalization;
+@using WeatherApp.Models;
+@using WeatherApp.Utilities;
+@inject HttpClient Client;
+
+<h3>Weather App </h3>
+<div class="input-group mb-3 mt-3">
+    <input class="form-control" type="text" @bind=city placeholder="City Name" />
+    <div>
+        <button class="btn btn-outline-secondary" @onclick=GetWeather type="button">Search</button>
+    </div>
+</div>
+
+@if (weatherData != null)
+{
+    <div class="text-center">
+        <p class="display-5">@city</p>
+        <p class="display-1">@weatherData.current.temperature_2m ºC</p>
+        @if (@weatherData.current.is_day == 0)
+        {
+            <p class="display-5">Es de dia</p>
+        }
+        else
+        {
+            <p class="display-5">Es de noche</p>
+        }
+        <p class="display-6">@Weathercode.Convert(@weatherData.daily.weathercode[0])</p>
+        @if (@weatherData.current.is_day == 0)
+        {
+            <p class="display-5">Es de noche</p>
+        }else
+        {
+            <p class="display-5">Es de dia</p>
+        }
+    </div>
+
+    <div class="card-group">
+        @for (int i = 0; i < weatherData.daily.time.Length; i++)
+        {
+            <WeatherApp.Components.WeatherCard Day="@weatherData.daily.time[i]"
+                                               MinWeatherData="@weatherData.daily.temperature_2m_min[i]"
+                                               MaxWeatherData="@weatherData.daily.temperature_2m_max[i]"
+                                               uv="@weatherData.daily.uv_index_max[i]"
+                                               Descripcion="@Weathercode.Convert(@weatherData.daily.weathercode[i])">
+            </WeatherApp.Components.WeatherCard>
+        }
+    </div>
+}
+
+
+
+@code {
+    //uvindexmax="@weatherData.daily.uv_index_max[i]"
+    string city = "";
+    float lat;
+    float lon;
+    WeatherModel? weatherData; // ? puede encontrarse la ciudad o no
+
+    async Task GetWeather()
+    {
+        var cityData = await GetCityData(); // conseguimos la lat y lon de la ciudad
+        lat = cityData.results[0].lat;  // tiene coma decimal
+        lon = cityData.results[0].lon;  // tiene coma decimal
+
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US"); // pto decimal
+        weatherData = await Client.GetFromJsonAsync<WeatherModel>(EndPoints.GetWeatherEndPoint(lat, lon));
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("es-es");
+    }
+
+    async Task<CityData> GetCityData()
+    {
+        var cityData = await Client.GetFromJsonAsync<CityData>(EndPoints.GetGeoApifyEndPoint(city));
+        return cityData;
+    }
+}
