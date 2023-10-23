@@ -17,14 +17,6 @@
     <div class="text-center">
         <p class="display-5">@city</p>
         <p class="display-1">@weatherData.current.temperature_2m ºC</p>
-        @if (@weatherData.current.is_day == 0)
-        {
-            <p class="display-5">Es de dia</p>
-        }
-        else
-        {
-            <p class="display-5">Es de noche</p>
-        }
         <p class="display-6">@Weathercode.Convert(@weatherData.daily.weathercode[0])</p>
         @if (@weatherData.current.is_day == 0)
         {
@@ -36,18 +28,12 @@
         }
     </div>
 
-    @if (listaPaises !=null && listaPaises.Count > 0)
+    @if (cityData != null && cityData.results.Length > 0)
     {
         <ul>
-            @for (int i = 0; i < listaPaises.Count; i++)
+            @for (int i = 0; i < cityData.results.Length; i++)
             {
-                <li>@listaPaises[i]</li>
-            }
-        </ul>
-        <ul>
-            @foreach (string item in listaPaises)
-            {
-                <li>@item</li>
+                <li>@cityData.results[i].formatted</li>
             }
         </ul>
     }
@@ -66,26 +52,18 @@
 }
 
 
-
 @code {
-    //uvindexmax="@weatherData.daily.uv_index_max[i]"
     string city = "";
     float lat;
     float lon;
     WeatherModel? weatherData; // ? puede encontrarse la ciudad o no
-    List<string>? listaPaises;
+    CityData? cityData;
 
     async Task GetWeather()
     {
-        var cityData = await GetCityData(); // conseguimos la lat y lon de la ciudad
+        cityData = await GetCityData(); // conseguimos la lat y lon de la ciudad
         lat = cityData.results[0].lat;  // tiene coma decimal
         lon = cityData.results[0].lon;  // tiene coma decimal
-        listaPaises = new List<string>();
-
-        @for (int i = 0; i < cityData.results.Length; i++)
-        {
-            listaPaises.Add(cityData.results[i].formatted);
-        }
 
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US"); // pto decimal
         weatherData = await Client.GetFromJsonAsync<WeatherModel>(EndPoints.GetWeatherEndPoint(lat, lon));
@@ -94,7 +72,7 @@
 
     async Task<CityData> GetCityData()
     {
-        var cityData = await Client.GetFromJsonAsync<CityData>(EndPoints.GetGeoApifyEndPoint(city));
-        return cityData;
+        var cityData1 = await Client.GetFromJsonAsync<CityData>(EndPoints.GetGeoApifyEndPoint(city));
+        return cityData1;
     }
 }
