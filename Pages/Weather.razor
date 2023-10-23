@@ -29,11 +29,22 @@
         @if (@weatherData.current.is_day == 0)
         {
             <p class="display-5">Es de noche</p>
-        }else
+        }
+        else
         {
             <p class="display-5">Es de dia</p>
         }
     </div>
+
+    @if (listaPaises !=null && listaPaises.Count > 0)
+    {
+        <ul>
+            @for (int i = 0; i < listaPaises.Count; i++)
+            {
+                <li>@listaPaises[i]</li>
+            }
+        </ul>
+    }
 
     <div class="card-group">
         @for (int i = 0; i < weatherData.daily.time.Length; i++)
@@ -56,12 +67,19 @@
     float lat;
     float lon;
     WeatherModel? weatherData; // ? puede encontrarse la ciudad o no
+    List<string>? listaPaises;
 
     async Task GetWeather()
     {
         var cityData = await GetCityData(); // conseguimos la lat y lon de la ciudad
         lat = cityData.results[0].lat;  // tiene coma decimal
         lon = cityData.results[0].lon;  // tiene coma decimal
+        listaPaises = new List<string>();
+
+        @for (int i = 0; i < cityData.results.Length; i++)
+        {
+            listaPaises.Add(cityData.results[i].formatted);
+        }
 
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US"); // pto decimal
         weatherData = await Client.GetFromJsonAsync<WeatherModel>(EndPoints.GetWeatherEndPoint(lat, lon));
