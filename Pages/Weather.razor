@@ -28,7 +28,7 @@
         }
     </div>
 
-    @if (listaPaises !=null && listaPaises.Count > 0)
+    @if (cityData !=null && cityData.results.Length > 0)
     {
         <ul>
             @for (int i = 0; i < cityData.results.Length; i++)
@@ -58,6 +58,7 @@
     float lon;
     WeatherModel? weatherData; // ? puede encontrarse la ciudad o no
     List<string>? listaPaises;
+    CityData cityData;
 
     async Task GetWeather()
     {
